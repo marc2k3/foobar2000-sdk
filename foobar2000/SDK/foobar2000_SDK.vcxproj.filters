@@ -407,6 +407,9 @@
     <ClInclude Include="advconfig_impl_legacy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="titleformat_object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="abort_callback.cpp">

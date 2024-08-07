@@ -538,6 +538,7 @@ namespace pfc {
 		return StrCmpLogicalW(s1, s2);
 	}
 
+#ifndef PFC_SORTSTRING_GENERIC
 	sortString_t makeSortString(const char* in) {
 		auto out = std::make_unique<wchar_t[]>(pfc::stringcvt::estimate_utf8_to_wide(in));
 		pfc::stringcvt::convert_utf8_to_wide_unchecked(out.get(), in);
@@ -555,6 +556,7 @@ namespace pfc {
     int sortStringCompareI(sortString_t const& s1, sortString_t const& s2) {
         return winNaturalSortCompareI(s1.get(), s2.get());
     }
+#endif
 }
 
 

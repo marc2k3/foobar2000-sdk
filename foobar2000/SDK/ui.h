@@ -251,7 +251,7 @@ protected:
 	}
 
 	//avoid pure virtual function calls in rare cases - provide a dummy implementation
-	void on_selection_changed(metadb_handle_list_cref p_selection) {}
+	void on_selection_changed(metadb_handle_list_cref p_selection) override {}
 
 	PFC_CLASS_NOT_COPYABLE_EX(ui_selection_callback_impl_base);
 private:
@@ -279,7 +279,7 @@ protected:
 	}
 
 	//avoid pure virtual function calls in rare cases - provide a dummy implementation
-	void on_selection_changed(metadb_handle_list_cref p_selection) {}
+	void on_selection_changed(metadb_handle_list_cref p_selection) override {}
 
 	PFC_CLASS_NOT_COPYABLE(ui_selection_callback_impl_base_ex, ui_selection_callback_impl_base_ex<flags>);
 private:

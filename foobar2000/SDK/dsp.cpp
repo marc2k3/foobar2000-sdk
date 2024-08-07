@@ -224,17 +224,59 @@ void dsp_chain_config::remove_all()
 	remove_mask(pfc::bit_array_true());
 }
 
-void dsp_chain_config::instantiate(service_list_t<dsp> & p_out)
-{
-	p_out.remove_all();
-	t_size n, m = get_count();
-	for(n=0;n<m;n++)
-	{
-		service_ptr_t<dsp> temp;
-		auto const & preset = this->get_item(n);
-		if (dsp_entry::g_instantiate(temp,preset) || dsp_entry_hidden::g_instantiate(temp, preset))
-			p_out.add_item(temp);
-	}
+size_t dsp_chain_config::find_first_of_type( const GUID & dspID ) const {
+    const size_t count = this->get_count();
+    for(size_t w = 0; w < count; ++w) {
+        if (this->get_item(w).get_owner() == dspID) return w;
+    }
+    return pfc_infinite;
+}
+
+bool dsp_chain_config::contains_dsp( const GUID & dspID ) const {
+    return find_first_of_type( dspID ) != pfc_infinite;
+}
+
+bool dsp_chain_config::enable_dsp( const GUID & dspID ) {
+    if (this->contains_dsp( dspID )) return false;
+    dsp_preset_impl preset;
+    dsp_entry::g_get_default_preset( preset, dspID );
+    insert_item( preset, 0 );
+    return true;
+}
+
+bool dsp_chain_config::disable_dsp( const GUID & dspID ) {
+    const size_t count = this->get_count();
+    if (count == 0) return false;
+    bool rv = false;
+	pfc::bit_array_bittable mask( count );
+    for(size_t w = 0; w < count; ++ w) {
+        if (this->get_item(w).get_owner() == dspID ) {
+            rv = true;
+            mask.set(w, true);
+        }
+    }
+    if (rv) this->remove_mask( mask );
+    return rv;
+}
+
+bool dsp_chain_config::enable_dsp( const dsp_preset & preset ) {
+    dsp_chain_config & cfg = *this;
+    bool found = false;
+    bool changed = false;
+    t_size n,m = cfg.get_count();
+    for(n=0;n<m;n++) {
+        if (cfg.get_item(n).get_owner() == preset.get_owner()) {
+            found = true;
+            if (cfg.get_item(n) != preset) {
+                cfg.replace_item(preset,n);
+                changed = true;
+            }
+            break;
+        }
+    }
+    if (!found) {cfg.insert_item(preset,0); changed = true;}
+    
+    return changed;
 }
 
 void dsp_chain_config_impl::reorder(const size_t * order, size_t count) {
@@ -465,12 +507,6 @@ void dsp_entry::g_show_config_popup_v2(const dsp_preset & p_preset,fb2k::hwnd_t 
 }
 #endif
 
-#ifndef _WIN32
-service_ptr dsp_entry::show_config_popup( fb2k::hwnd_t, dsp_preset_edit_callback_v2::ptr ) {
-    throw pfc::exception_not_implemented();
-}
-#endif
-
 service_ptr_t<dsp_entry> dsp_entry::g_get_interface(const GUID& guid) {
 	for (auto ptr : enumerate()) {
 		if (ptr->get_guid() == guid) return ptr;
@@ -491,12 +527,14 @@ bool dsp_entry::g_get_interface(service_ptr_t<dsp_entry> & p_out,const GUID & p_
 
 bool resampler_entry::g_get_interface(service_ptr_t<resampler_entry> & p_out,unsigned p_srate_from,unsigned p_srate_to)
 {
-#if FOOBAR2000_TARGET_VERSION >= 79
+#if defined(FOOBAR2000_DESKTOP) && FOOBAR2000_TARGET_VERSION >= 79
 	auto r = resampler_manager::get()->get_resampler( p_srate_from, p_srate_to );
 	bool v = r.is_valid();
 	if ( v ) p_out = std::move(r);
 	return v;
 #else
+    
+#ifdef FOOBAR2000_DESKTOP
 	{
 		resampler_manager::ptr api;
 		if ( resampler_manager::tryGet(api) ) {
@@ -506,6 +544,7 @@ bool resampler_entry::g_get_interface(service_ptr_t<resampler_entry> & p_out,uns
 			return v;
 		}
 	}
+#endif
 
 	resampler_entry::ptr ptr_resampler;
 	service_enum_t<dsp_entry> e;
@@ -598,7 +637,7 @@ pfc::string8 dsp_chain_config::get_name_list() const {
 	return output;
 }
 
-void dsp::run_abortable(dsp_chunk_list * p_chunk_list,const metadb_handle_ptr & p_cur_file,int p_flags,abort_callback & p_abort) {
+void dsp::run_abortable(dsp_chunk_list * p_chunk_list,const dsp_track_t & p_cur_file,int p_flags,abort_callback & p_abort) {
 	service_ptr_t<dsp_v2> this_v2;
 	if (this->service_query_t(this_v2)) this_v2->run_v2(p_chunk_list,p_cur_file,p_flags,p_abort);
 	else run(p_chunk_list,p_cur_file,p_flags);
@@ -636,6 +675,23 @@ bool dsp_entry_v2::show_config_popup(dsp_preset & p_data,fb2k::hwnd_t p_parent) 
 }
 #endif
 
+#ifdef FOOBAR2000_MOBILE
+void dsp_entry::g_show_config_popup( menu_context_ptr ctx, dsp_preset_edit_callback_v2::ptr callback) {
+    GUID dspID;
+    {
+        dsp_preset_impl temp;
+        callback->get_preset( temp );
+        dspID = temp.get_owner();
+    }
+
+    dsp_entry::ptr entry;
+    if (!g_get_interface( entry, dspID)) return;
+    if (!entry->have_config_popup()) return;
+    entry->show_config_popup( ctx, callback );
+}
+#endif // FOOBAR2000_MOBILE
+
+#ifdef FOOBAR2000_DESKTOP
 void resampler_manager::make_chain_(dsp_chain_config& outChain, unsigned rateFrom, unsigned rateTo, float qualityScale) {
 	resampler_manager_v2::ptr v2;
 	if (v2 &= this) {
@@ -651,6 +707,7 @@ void resampler_manager::make_chain_(dsp_chain_config& outChain, unsigned rateFro
 		}
 	}
 }
+#endif
 
 void dsp_preset_edit_callback_v2::reset() {
     dsp_preset_impl temp; get_preset( temp );
@@ -674,6 +731,27 @@ void dsp_entry::get_display_name_(const dsp_preset& arg, pfc::string_base& out) 
 		v3->get_display_name(arg, out); return;
 	}
 	get_name(out);
+}
+
+bool dsp_entry::enumerate_default_presets_(dsp_chain_config& ret) {
+	ret.remove_all();
+	dsp_entry_v5::ptr v5;
+	if (v5 &= this) {
+		bool rv = v5->enumerate_default_presets(ret);
+#if PFC_DEBUG
+		for (size_t walk = 0; walk < ret.get_count(); ++walk) {
+			PFC_ASSERT(ret.get_item(walk).get_owner() == get_guid());
+		}
+#endif
+		return rv;
+	}
+	return false;
+}
+
+bool dsp_entry::match_preset_subclass_(dsp_preset const& x, dsp_preset const& y) {
+	dsp_entry_v5::ptr v5;
+	if (v5 &= this) return v5->match_preset_subclass(x, y);
+	return true;
 }
 
 #endif // FOOBAR2000_HAVE_DSP

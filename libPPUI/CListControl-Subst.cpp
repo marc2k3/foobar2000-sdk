@@ -870,7 +870,7 @@ namespace {
 			auto pItem = reinterpret_cast<LVITEM*>(lp);
 			size_t item = (size_t)pItem->iItem;
 			const size_t total = GetItemCount();
-			if (item > total) return FALSE;
+			if (item >= total) return FALSE;
 			size_t subItem = (size_t)pItem->iSubItem;
 			if (subItem > 1024) return FALSE; // quick sanity
 			auto& rec = m_content[item];

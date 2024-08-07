@@ -954,7 +954,7 @@ bool file_info::meta_value_exists( const char * name, const char * findValue, bo
 			if ( insensitive ) {
 				if (pfc::stringEqualsI_utf8(value, findValue)) return true;
 			} else {
-				if ( strcmp(value, findValue)) return true;
+				if ( strcmp(value, findValue) == 0 ) return true;
 			}
 		}
 	}
@@ -971,6 +971,13 @@ void file_info::info_set_pictures( const GUID * guids, size_t size ) {
 
 pfc::array_t<GUID> file_info::info_get_pictures( ) const {
     return album_art_ids::string_to_ids( this->info_get( "pictures" ) );
+}
+
+bool file_info::info_have_picture( const GUID & arg ) const {
+    for( auto & walk : info_get_pictures() ) {
+        if ( walk == arg ) return true;
+    }
+    return false;
 }
 
 uint64_t file_info::makeMetaHash() const {

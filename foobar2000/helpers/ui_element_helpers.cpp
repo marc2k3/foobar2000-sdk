@@ -120,7 +120,7 @@ void ui_element_helpers::ui_element_edit_tools::standard_edit_context_menu(LPARA
 	}
 	
 	CMenu menu;
-	WIN32_OP( menu.CreatePopupMenu() );
+	WIN32_OP_D( menu.CreatePopupMenu() );
 
 	const GUID sourceItemGuid = p_item->get_guid();
 	const bool sourceItemEmpty = !!(sourceItemGuid == pfc::guid_null);
@@ -367,7 +367,7 @@ void ui_element_instance_standard_context_menu(service_ptr_t<ui_element_instance
 	if (p_elem->edit_mode_context_menu_test(pt, fromKeyboard)) {
 		const unsigned idBase = 1;
 		CMenu menu;
-		WIN32_OP(menu.CreatePopupMenu());
+		WIN32_OP_D(menu.CreatePopupMenu());
 		p_elem->edit_mode_context_menu_build(pt, fromKeyboard, menu, idBase);
 
 		int cmd;

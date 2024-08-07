@@ -161,6 +161,19 @@ string8 string_filename(const char * fn)
 	return ret;
 }
 
+const char * extract_ext_v2( const char * filenameDotExt ) {
+    auto split = strrchr(filenameDotExt, '.');
+    return split ? split+1 : "";
+}
+
+string8 remove_ext_v2( const char * filenameDotExt ) {
+    auto split = strrchr(filenameDotExt, '.');
+    string8 ret;
+    if ( split ) ret.set_string_nc( filenameDotExt, split-filenameDotExt );
+    else ret = filenameDotExt;
+    return ret;
+}
+
 const char * filename_ext_v2( const char * fn, char slash ) {
     if ( slash == 0 ) {
 		slash = pfc::io::path::getDefaultSeparator();
@@ -1367,5 +1380,24 @@ void string_base::fix_dir_separator(char c) {
 			++in;
 		}
 		return ret;
+	}
+	static bool is_spacing(char c) {
+		switch (c) {
+		case ' ': case '\n': case '\r': case '\t': return true;
+		default: return false;
+		}
+	}
+	pfc::string8 string_trim_spacing(const char* in) {
+		const char* temp_ptr = in;
+		while (is_spacing(*temp_ptr)) temp_ptr++;
+		const char* temp_start = temp_ptr;
+		const char* temp_end = temp_ptr;
+		while (*temp_ptr)
+		{
+			if (!is_spacing(*temp_ptr)) temp_end = temp_ptr + 1;
+			temp_ptr++;
+		}
+
+		return string_part_ref { temp_start, (size_t)(temp_end - temp_start) };
 	}
 } //namespace pfc

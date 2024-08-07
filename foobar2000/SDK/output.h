@@ -129,7 +129,7 @@ public:
 	//! Returns whether the audio stream is currently being played or not. \n
 	//! Typically, for a short period of time, initially sent data is not played until a sufficient amount is queued to initiate playback without glitches. \n
     //! For old outputs that do not implement this, the value can be assumed to be true.
-    virtual bool is_progressing() {return true;}
+	virtual bool is_progressing() = 0;
     
     //! Improved version of update(); returns 0 if the output isn't ready to receive any new data, otherwise an advisory number of samples - at the current stream format - that the output expects to take now. \n
     //! If the caller changes the stream format, the value is irrelevant. \n
@@ -269,6 +269,7 @@ protected:
     // base class virtual methods which derived class must also implement
     // virtual void pause(bool p_state) = 0;
     // virtual void volume_set(double p_val) = 0;
+	// virtual bool is_progressing() = 0;
 protected:
 	void on_need_reopen() {m_active_spec.clear(); }
 private:

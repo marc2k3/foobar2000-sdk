@@ -34,6 +34,13 @@ namespace pfc {
             m_condition.wait(lock, [this] { return this->m_state; });
             m_state = false;
         }
+        bool wait_for_and_clear(double timeout) {
+            if ( timeout < 0 ) {wait_and_clear(); return true;}
+            std::unique_lock lock(m_mutex);
+            bool rv = m_condition.wait_for(lock, std::chrono::duration<double>(timeout), [this] { return this->m_state; });
+            if ( rv ) m_state = false;
+            return rv;
+        }
     private:
         volatile bool m_state = false;
         std::condition_variable m_condition;

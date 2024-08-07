@@ -328,6 +328,7 @@ public:
 #ifdef FOOBAR2000_MOBILE
     void info_set_pictures( const GUID * guids, size_t size );
     pfc::array_t<GUID> info_get_pictures( ) const;
+    bool info_have_picture(const GUID&) const;
     uint64_t makeMetaHash() const;
 #endif
 protected:

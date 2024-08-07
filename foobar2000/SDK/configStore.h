@@ -135,6 +135,7 @@ stringRef val = api->getConfigString( "myComponent.foo", "defaultVal" );
 class configStore2 : public configStore {
     FB2K_MAKE_SERVICE_COREAPI_EXTENSION(configStore2, configStore);
 public:
+    // Use flagSuppressCache to prevent value from being cached. Prevents memory usage creep if querying lots of uniquely named variables.
     static constexpr uint32_t flagSuppressCache = 1;
     
     virtual int64_t getConfigInt2( const char * name, int64_t defVal = 0, uint32_t flags = 0 ) = 0;

@@ -53,7 +53,8 @@ public:
 		m_changed_flag = true;
 	}
 	bool has_changed() const {
-		inReadSync(m_sync);
+		// No point in locking here
+		// inReadSync(m_sync);
 		return m_changed_flag;
 	}
 	t_object peek() const {inReadSync(m_sync); return m_object;}

@@ -2496,3 +2496,16 @@ drivespace_t filesystem::getDriveSpace_(const char* pathAt, abort_callback& abor
     if (v3 &= this) return v3->getDriveSpace(pathAt, abort);
     throw pfc::exception_not_implemented();
 }
+
+size_t stream_receive::read_using_receive(void* ptr_, size_t bytes, abort_callback& a) {
+    size_t walk = 0;
+    auto ptr = reinterpret_cast<uint8_t*>(ptr_);
+    while(walk < bytes) {
+        size_t want = bytes-walk;
+        size_t delta = this->receive(ptr+walk, want, a);
+        PFC_ASSERT( delta <= want );
+        if ( delta == 0 ) break;
+        walk += delta;
+    }
+    return walk;
+}

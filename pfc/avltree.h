@@ -9,15 +9,15 @@ namespace pfc {
 	public:
 		typedef _list_node<t_storage> t_node;
 		typedef _avltree_node<t_storage> t_self;
-		template<typename t_param> _avltree_node(t_param const& param) : t_node(param), m_left(), m_right(), m_depth() {}
+		template<typename t_param> _avltree_node(t_param const& param) : t_node(param) {}
 
 		typedef refcounted_object_ptr_t<t_self> t_ptr;
 		typedef t_self* t_rawptr;
 		
-		t_ptr m_left, m_right;
-		t_rawptr m_parent;
+		t_ptr m_left, m_right; // smart ptr, no init
+		t_rawptr m_parent = nullptr;
 
-		t_size m_depth;
+		t_size m_depth = 0;
 
 		void link_left(t_self* ptr) throw() {
 			m_left = ptr;

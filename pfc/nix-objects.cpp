@@ -165,6 +165,7 @@ namespace pfc {
                 if (f.revents & POLLOUT) Writes += f.fd;
                 if (f.revents & POLLERR) Errors += f.fd;
             }
+            PFC_ASSERT( !Reads.m_fds.empty() || !Writes.m_fds.empty() || !Errors.m_fds.empty() );
         }
         
         return status;

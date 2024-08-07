@@ -126,6 +126,7 @@ namespace pfc {
         }
     }
 
+#ifndef PFC_SORTSTRING_GENERIC
     sortString_t makeSortString(const char* str) {
         sortString_t ret;
         ret.Attach( CFStringCreateWithCString(NULL, str, kCFStringEncodingUTF8) );
@@ -137,5 +138,6 @@ namespace pfc {
     int sortStringCompareI(sortString_t const& s1, sortString_t const& s2) {
         return (int) CFStringCompare(s1.p, s2.p, kCFCompareLocalized | kCFCompareNumerically | kCFCompareCaseInsensitive );
     }
+#endif
 }
 #endif
