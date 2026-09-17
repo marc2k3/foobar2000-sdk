@@ -31,7 +31,11 @@ namespace pfc { [[noreturn]] void crashImpl(); }
 #ifdef _WIN32
 extern "C" [[noreturn]] void pfc_crashHook();
 extern "C" [[noreturn]] void pfc_crashHook_default() {pfc::crashImpl();}
+#ifdef _M_IX86
+#pragma comment(linker, "/alternatename:_pfc_crashHook=_pfc_crashHook_default")
+#else
 #pragma comment(linker, "/alternatename:pfc_crashHook=pfc_crashHook_default")
+#endif
 #endif
 
 namespace pfc {

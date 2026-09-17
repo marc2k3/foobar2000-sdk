@@ -18,7 +18,11 @@
 namespace pfc {BOOL winFormatSystemErrorMessageImpl(pfc::string_base&, DWORD);}
 extern "C" BOOL pfc_winFormatSystemErrorMessageHook(pfc::string_base&, DWORD);
 extern "C" BOOL pfc_winFormatSystemErrorMessageHook_default(pfc::string_base& out, DWORD code) { return pfc::winFormatSystemErrorMessageImpl(out, code); }
+#ifdef _M_IX86
+#pragma comment(linker, "/alternatename:_pfc_winFormatSystemErrorMessageHook=_pfc_winFormatSystemErrorMessageHook_default")
+#else
 #pragma comment(linker, "/alternatename:pfc_winFormatSystemErrorMessageHook=pfc_winFormatSystemErrorMessageHook_default")
+#endif
 
 namespace pfc {
 
